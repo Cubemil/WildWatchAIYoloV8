@@ -1,93 +1,113 @@
-# WildWatchAIYolov8
+# YOLOv8 WildWatchAI
 
+## Introduction
 
+This repository contains the code and documentation for fine-training the YOLOv8 model on our custom dataset.
+This project demonstrates the process of annotating a custom dataset, training the YOLOv8 model, evaluating its performance, and deploying the trained model in a Streamlit application.
 
-## Getting started
+## Table of Contents
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+- [Introduction](#introduction)
+- [Dataset](#dataset)
+- [Model Training](#model-training)
+- [Evaluation](#evaluation)
+- [Deployment](#deployment)
+- [Getting Started](#getting-started)
+- [Acknowledgements](#acknowledgements)
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## Dataset
 
-## Add your files
+The dataset consists of self-annotated images of various animals. The images were annotated by handwith bounding boxes. The images were augmented and split into Train/Validation/Test subsets and evenly distributed by RoboFlow's web interface. The annotations were exported in the YOLO format, which includes the class label and the bounding box coordinates.
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+## Model Training
 
+1. **Prepared the Dataset**: annotation, augmentation, polishing, splitting and exporting
+2. **Installed Dependencies in our virtual environment**: installed the necessary libraries and dependencies, including PyTorch, YOLOv8, ultralytics, streamlit etc.
+3. **Configured model**: Set up the yolov8 configuration file with the appropriate parameters for our custom dataset, such as the number of classes, input image size, and training hyperparameters. (Did this in the web GUI on the final runs)
+4. **Train the Model**: Ran training script (or web training with google collab) to train the model. Epochs: ~500
+
+```python
+from yolov8 import YOLO
+
+# load model
+model = YOLO('./models/wildwatch_yolov8_X.pt') # X => model version
+
+# train model on dataset
+model.train(data='./content/datasets/wildAnimals', epochs=50, batch_size=16, img_size=640)
 ```
-cd existing_repo
-git remote add origin https://gitlab.hs-anhalt.de/stempete/wildwatchaiyolov8.git
-git branch -M main
-git push -uf origin main
+
+## Evaluation
+
+After training the model, we used confusion matrices to visualize the performance of different versions of the model.
+
+1. **Generated Predictions**: Ran the model on the test set to generate predictions.
+2. **Computed Metrics**: Calculated evaluation metrics such as precision, recall, and F1-score. (sklearn)
+3. **Visualized Confusion Matrix**: Created confusion matrices to visualize the performance of the model. (normalised and by actual TP/FP/TN/FN-counts)
+
+```python
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+
+predictions = model.predict('./content/datasets/wildAnimals/test/X.png')
+
+cm = confusion_matrix(true_labels, predicted_labels, labels=class_names)
+
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=class_names)
+disp.plot(cmap=plt.cm.Blues)
+plt.show()
 ```
 
-## Integrate with your tools
+## Deployment
 
-- [ ] [Set up project integrations](https://gitlab.hs-anhalt.de/stempete/wildwatchaiyolov8/-/settings/integrations)
+The trained model is deployed in a Streamlit application for real-time animal detection. 
 
-## Collaborate with your team
+1. **Set Up Streamlit App**: Created a Streamlit app to load the trained model and provide an interface for users to upload and predict images.
+2. **Loaded and Ran Model**: Integrated the model to run inference on the uploaded images and display the results.
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+```python
+import streamlit as st
+from yolov8 import YOLO
 
-## Test and Deploy
+model = YOLO('path/to/trained/model')
 
-Use the built-in continuous integration in GitLab.
+st.title('Animal Detection with YOLOv8')
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+uploaded_file = st.file_uploader('Upload an image', type=['jpg', 'jpeg', 'png'])
 
-***
+if uploaded_file is not None:
+    image = load_image(uploaded_file)
+    
+    results = model.predict(image)
+    
+    st.image(results.img, caption='Detected Animals', use_column_width=True)
+```
 
-# Editing this README
+## Getting Started
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+To get started with this project, clone the repository and follow the instructions below:
 
-## Suggestions for a good README
+1. **Clone the Repository**:
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+    ```sh
+    git clone https://github.com/your-username/yolov8-animal-detection.git
+    cd yolov8-animal-detection
+    ```
 
-## Name
-Choose a self-explaining name for your project.
+2. **Set up a virtual environment**
+    - *Our method:* Create in VSCode and activate by running .venv\Scripts\activate
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+3. **Install Dependencies**:
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+    ```sh
+    pip install -r requirements.txt
+    ```
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+4. **Train the Model**: Follow the [Model Training](#model-training) section to train the YOLOv8 model on your custom dataset.
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+5. **Evaluate the Model**: Use the [Evaluation](#evaluation) section to evaluate the performance of the trained model.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+6. **Run the Streamlit App**:
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+    ```sh
+    streamlit run app.py
+    ```
