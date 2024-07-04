@@ -4,8 +4,9 @@ import numpy as np
 from ultralytics import YOLO
 import matplotlib.pyplot as plt
 from sklearn.metrics import precision_score
-from PIL import Image
-import io
+from PIL import Image, ImageDraw, ImageFont
+import yaml
+import os
 
 # Paths to the dataset folders and yaml file
 test_images_directory_path = "./content/datasets/animalDataset/test/images"
@@ -15,10 +16,30 @@ data_yaml_path = "./content/datasets/animalDataset/data.yaml"
 # Load the model
 model = YOLO("./models/wildwatchyolov8_v2_finetuning05.pt")
 
+# Load class names from data.yaml
+with open(data_yaml_path, 'r') as file:
+    data = yaml.safe_load(file)
+class_names = data['names']
+
 # Callback function for model predictions
-def callback(image: np.ndarray) -> sv.Detections:
+def callback(image: np.ndarray):
     result = model(image)[0]
-    return sv.Detections.from_ultralytics(result)
+    return result
+
+# Function to draw bounding boxes on the image
+def draw_bounding_boxes(image: np.ndarray, result) -> np.ndarray:
+    pil_image = Image.fromarray(image)
+    draw = ImageDraw.Draw(pil_image)
+    font = ImageFont.load_default()
+
+    for box in result.boxes:
+        x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+        label = int(box.cls[0].cpu().numpy())
+        class_name = class_names[label]
+        draw.rectangle([x1, y1, x2, y2], outline="red", width=3)
+        draw.text((x1, y1), class_name, fill="red", font=font)
+
+    return np.array(pil_image)
 
 # Streamlit app setup
 st.title("WildWatchAI's fine-tuned YOLOv8 model")
@@ -35,8 +56,9 @@ if choice == "Home":
         st.image(image, caption='Uploaded Image', use_column_width=True)
         st.write("")
         st.write("Running inference...")
-        results = callback(image)
-        st.image(results.img, caption='Detected Animals', use_column_width=True)
+        result = callback(image)
+        image_with_boxes = draw_bounding_boxes(image, result)
+        st.image(image_with_boxes, caption='Detected Animals', use_column_width=True)
 
 elif choice == "Evaluation":
     st.subheader("Model Evaluation Metrics")
@@ -67,7 +89,7 @@ elif choice == "Evaluation":
         image, labels = data.image, data.labels  # Adjust indexing based on the structure
         detections = callback(image)
         true_labels.extend(labels)
-        predicted_labels.extend(detections.labels)
+        predicted_labels.extend(detections.boxes.cls.cpu().numpy())
 
     # Calculate precision for each class
     precision = precision_score(true_labels, predicted_labels, average=None)
