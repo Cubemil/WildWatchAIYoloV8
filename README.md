@@ -25,7 +25,7 @@ The dataset consists of self-annotated images of various animals. The images wer
 4. **Train the Model**: Ran the training script (or used web training with Google Colab) to train the model. Epochs: ~500
 
 ```python
-from yolov8 import YOLO
+from ultralytics import YOLO
 
 model = YOLO('./models/wildwatch_yolov8_X.pt')  # X => model version
 
@@ -62,7 +62,7 @@ The trained model is deployed in a Streamlit application for real-time animal de
 
 ```python
 import streamlit as st
-from yolov8 import YOLO
+from ultralytics import YOLO
 
 model = YOLO('path/to/trained/model')
 
