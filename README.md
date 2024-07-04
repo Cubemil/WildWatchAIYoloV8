@@ -29,10 +29,8 @@ The dataset consists of self-annotated images of various animals. The images wer
 ```python
 from yolov8 import YOLO
 
-# load model
 model = YOLO('./models/wildwatch_yolov8_X.pt') # X => model version
 
-# train model on dataset
 model.train(data='./content/datasets/wildAnimals', epochs=50, batch_size=16, img_size=640)
 ```
 
