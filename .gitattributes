@@ -1,2 +1,9 @@
-/images filter=lfs diff=lfs merge=lfs -text
-/labels filter=lfs diff=lfs merge=lfs -text
+# Track images in the train, valid, and test directories with Git LFS
+./content/datasets/animalDataset/train/images/* filter=lfs diff=lfs merge=lfs -text
+./content/datasets/animalDataset/valid/images/* filter=lfs diff=lfs merge=lfs -text
+./content/datasets/animalDataset/test/images/* filter=lfs diff=lfs merge=lfs -text
+
+# Track labels in the train, valid, and test directories with Git LFS
+./content/datasets/animalDataset/train/labels/* filter=lfs diff=lfs merge=lfs -text
+./content/datasets/animalDataset/valid/labels/* filter=lfs diff=lfs merge=lfs -text
+./content/datasets/animalDataset/test/labels/* filter=lfs diff=lfs merge=lfs -text

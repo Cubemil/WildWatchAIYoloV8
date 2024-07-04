@@ -1,5 +1,6 @@
 # Ignore the virtual environment directory
 .venv/
+content/datasets/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
