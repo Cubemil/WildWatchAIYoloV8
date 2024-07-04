@@ -2,8 +2,7 @@
 
 ## Introduction
 
-This repository contains the code and documentation for fine-training the YOLOv8 model on our custom dataset.
-This project demonstrates the process of annotating a custom dataset, training the YOLOv8 model, evaluating its performance, and deploying the trained model in a Streamlit application.
+This repository contains the code and documentation for fine-tuning the YOLOv8 model on our custom dataset. This project demonstrates the process of annotating a custom dataset, training the YOLOv8 model, evaluating its performance, and deploying the trained model in a Streamlit application.
 
 ## Table of Contents
 
@@ -13,25 +12,24 @@ This project demonstrates the process of annotating a custom dataset, training t
 - [Evaluation](#evaluation)
 - [Deployment](#deployment)
 - [Getting Started](#getting-started)
-- [Acknowledgements](#acknowledgements)
 
 ## Dataset
 
-The dataset consists of self-annotated images of various animals. The images were annotated by handwith bounding boxes. The images were augmented and split into Train/Validation/Test subsets and evenly distributed by RoboFlow's web interface. The annotations were exported in the YOLO format, which includes the class label and the bounding box coordinates.
+The dataset consists of self-annotated images of various animals. The images were annotated by hand with bounding boxes. The images were augmented and split into Train/Validation/Test subsets and evenly distributed using RoboFlow's web interface. The annotations were exported in the YOLO format, which includes the class label and the bounding box coordinates.
 
 ## Model Training
 
-1. **Prepared the Dataset**: annotation, augmentation, polishing, splitting and exporting
-2. **Installed Dependencies in our virtual environment**: installed the necessary libraries and dependencies, including PyTorch, YOLOv8, ultralytics, streamlit etc.
-3. **Configured model**: Set up the yolov8 configuration file with the appropriate parameters for our custom dataset, such as the number of classes, input image size, and training hyperparameters. (Did this in the web GUI on the final runs)
-4. **Train the Model**: Ran training script (or web training with google collab) to train the model. Epochs: ~500
+1. **Prepared the Dataset**: Annotated, augmented, polished, split, and exported the data.
+2. **Installed Dependencies in our virtual environment**: Installed the necessary libraries and dependencies, including PyTorch, YOLOv8, Ultralytics, Streamlit, etc.
+3. **Configured the Model**: Set up the YOLOv8 configuration file with the appropriate parameters for our custom dataset, such as the number of classes, input image size, and training hyperparameters. (This was done in the web GUI for the final runs)
+4. **Train the Model**: Ran the training script (or used web training with Google Colab) to train the model. Epochs: ~500
 
 ```python
 from yolov8 import YOLO
 
-model = YOLO('./models/wildwatch_yolov8_X.pt') # X => model version
+model = YOLO('./models/wildwatch_yolov8_X.pt')  # X => model version
 
-model.train(data='./content/datasets/wildAnimals', epochs=50, batch_size=16, img_size=640)
+model.train(data='./content/datasets/wildAnimals', epochs=500, batch_size=16, img_size=640)
 ```
 
 ## Evaluation
@@ -39,8 +37,8 @@ model.train(data='./content/datasets/wildAnimals', epochs=50, batch_size=16, img
 After training the model, we used confusion matrices to visualize the performance of different versions of the model.
 
 1. **Generated Predictions**: Ran the model on the test set to generate predictions.
-2. **Computed Metrics**: Calculated evaluation metrics such as precision, recall, and F1-score. (sklearn)
-3. **Visualized Confusion Matrix**: Created confusion matrices to visualize the performance of the model. (normalised and by actual TP/FP/TN/FN-counts)
+2. **Computed Metrics**: Calculated evaluation metrics such as precision, recall, and F1-score (using scikit-learn).
+3. **Visualized Confusion Matrix**: Created confusion matrices to visualize the performance of the model (normalized and by actual TP/FP/TN/FN counts).
 
 ```python
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
@@ -57,7 +55,7 @@ plt.show()
 
 ## Deployment
 
-The trained model is deployed in a Streamlit application for real-time animal detection. 
+The trained model is deployed in a Streamlit application for real-time animal detection.
 
 1. **Set Up Streamlit App**: Created a Streamlit app to load the trained model and provide an interface for users to upload and predict images.
 2. **Loaded and Ran Model**: Integrated the model to run inference on the uploaded images and display the results.
@@ -87,12 +85,31 @@ To get started with this project, clone the repository and follow the instructio
 1. **Clone the Repository**:
 
     ```sh
-    git clone https://github.com/your-username/yolov8-animal-detection.git
+    git clone https://github.com/stempete/yolov8-animal-detection.git
     cd yolov8-animal-detection
     ```
 
-2. **Set up a virtual environment**
-    - *Our method:* Create in VSCode and activate by running .venv\Scripts\activate
+2. **Set up a virtual environment**:
+
+    - Create a virtual environment:
+
+        ```sh
+        python -m venv .venv
+        ```
+
+    - Activate the Virtual Environment:
+
+      - On Windows:
+
+        ```sh
+        .venv\Scripts\activate
+        ```
+
+      - On macOS/Linux:
+
+        ```sh
+        source .venv/bin/activate
+        ```
 
 3. **Install Dependencies**:
 
@@ -107,5 +124,5 @@ To get started with this project, clone the repository and follow the instructio
 6. **Run the Streamlit App**:
 
     ```sh
-    streamlit run app.py
+    streamlit run streamlit_app/app.py
     ```
