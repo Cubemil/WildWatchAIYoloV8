@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import precision_score
 from PIL import Image, ImageDraw, ImageFont
 import yaml
-import os
 
 # Paths to the dataset folders and yaml file
 test_images_directory_path = "./content/datasets/animalDataset/test/images"
@@ -34,7 +33,7 @@ def draw_bounding_boxes(image: np.ndarray, result) -> np.ndarray:
 
     for box in result.boxes:
         x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-        label = int(box.cls[0].cpu().numpy())
+        label = int(box.cls.cpu().numpy()[0])
         class_name = class_names[label]
         draw.rectangle([x1, y1, x2, y2], outline="red", width=3)
         draw.text((x1, y1), class_name, fill="red", font=font)
@@ -71,6 +70,10 @@ elif choice == "Evaluation":
         data_yaml_path=data_yaml_path
     )
 
+    def callback(image: np.ndarray) -> sv.Detections:
+        result = model(image)[0]
+        return sv.Detections.from_ultralytics(result)
+
     # Evaluate and get the confusion matrix
     confusion_matrix = sv.ConfusionMatrix.benchmark(
         dataset=dataset,
@@ -82,13 +85,14 @@ elif choice == "Evaluation":
     confusion_matrix.plot(normalize=True)
     st.pyplot(plt.gcf())
 
+    """
     # Extract true labels and predicted labels
     true_labels = []
     predicted_labels = []
     for data in dataset:
         image, labels = data.image, data.labels  # Adjust indexing based on the structure
         detections = callback(image)
-        true_labels.extend(labels)
+        true_labels.extend(labels[:, 0].cpu().numpy())  # Adjust to extract the class IDs
         predicted_labels.extend(detections.boxes.cls.cpu().numpy())
 
     # Calculate precision for each class
@@ -104,6 +108,8 @@ elif choice == "Evaluation":
     plt.xticks(rotation=45)
     plt.tight_layout()
     st.pyplot(fig)
+ 
+    """
 
 elif choice == "Visualizations":
     st.subheader("Model Visualizations")
